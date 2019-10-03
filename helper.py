@@ -1,37 +1,18 @@
-import os
 import pickle
 import copy
 import numpy as np
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
-#It Loads Data As Listd
-def load_data(path):
-    """
-    Load dataset
-    """
-    input_file = os.path.join(path)
-    with open(input_file, "r") as f:
-        data = f.read()
+from keras.models import model_from_json
+from IPython import get_ipython
 
-    return data.split('\n')
-
-
+ipython = get_ipython()
 
 
 CODES = {'<PAD>': 0, '<EOS>': 1, '<UNK>': 2, '<GO>': 3 }
 
-"""
-It Loads data as STR
-def load_data(path):
-    
-    input_file = os.path.join(path)
-    with open(input_file, 'r', encoding='utf-8') as f:
-        data = f.read()
-
-    return data
-"""
-
-def preprocess_and_save_data(x, y):
+#preprocess data once. pickel in that.
+def preprocess_data(x, y):
     """
     Preprocess x and y
     :param x: Feature List of sentences
@@ -47,28 +28,26 @@ def preprocess_and_save_data(x, y):
     # Keras's sparse_categorical_crossentropy function requires the labels to be in 3 dimensions
     preprocess_y = preprocess_y.reshape(*preprocess_y.shape, 1)
 
-    # Save Data
-    save_preprocess(preprocess_x, preprocess_y, x_tk, y_tk)
+    
     return preprocess_x, preprocess_y, x_tk, y_tk
 
 
-def save_preprocess(preprocess_x, preprocess_y,x_tk, y_tk):
+def Pickle_in_data(X, Y,x_tk, y_tk, Add):
     
-    pickle_out=open("Preprocess_Data.pickle", "wb")
-    pickle.dump((preprocess_x, preprocess_y,x_tk, y_tk), pickle_out)
-    pickle_out.close()
+    pickle_in=open(Add+".pickle", "wb")
+    pickle.dump((X, Y,x_tk, y_tk), pickle_in)
+    pickle_in.close()
     print("preprocessed DATA Saved\n")
     
 
-def load_preprocess():
+def Pickle_out_data(pickle_name):
     """
     Load the Preprocessed Training data and return them in batches of <batch_size> or less
     """
-    pickle_in=open("Preprocess_Data.pickle", "rb")
-    return pickle.load(pickle_in)
+    pickle_out=open(pickle_name, "rb")
+    return pickle.load(pickle_out)
 
 
-  
 def tokenize(x):
     """
     Tokenize x
@@ -79,8 +58,7 @@ def tokenize(x):
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(x)
     return tokenizer.texts_to_sequences(x), tokenizer
-#What is doing this code?
-#tests.test_tokenize(tokenize)
+
     
 def pad(x, length=None):
     """
@@ -104,6 +82,31 @@ def logits_to_text(logits, tokenizer):
     index_to_words[0] = '<PAD>'
 
     return ' '.join([index_to_words[prediction] for prediction in np.argmax(logits, 1)])
+
+
+def save_model(model, Add):
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(Add+'.json', "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(Add+'.h5')
+    print("Saved model to disk")
+    
+    
+def load_model(Add):
+    # load json and create model
+    json_file = open(Add, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    return loaded_model
+
+def load_Weight_model(model, Add):
+    # load weights into new model
+    model.load_weights(Add)
+    print("model weights Entered")
+    return model
 
 #####################################################
     

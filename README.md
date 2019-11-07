@@ -19,5 +19,5 @@ Using LSTM did not show any specific rather than GRU, the reason might be partia
 
 Glove can improve our performance very well.
 
-**Next Step:**
-currently i am training my model with some pretrained embedding models to check out their results.
+**Glove saved model.py:**
+it has configuration setting for running GPU. you need to make "gpu_enable_growth=true" for preventing OOm (Out of Memory)
